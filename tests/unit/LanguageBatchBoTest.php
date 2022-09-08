@@ -10,9 +10,15 @@ class LanguageBatchBoTest extends TestCase
 {
     private $language;
 
+    private $phpFiles;
+
+    private $xmlFiles;
+
     public function setUp(): void
     {
         $this->language = new LanguageBatchBo();
+        $this->phpFiles = $this->getLanguageFiles();
+        $this->xmlFiles = $this->getLanguageFiles('xml');
     }
 
     public function testMethodsOfLanguageBatchBoExist()
@@ -35,8 +41,9 @@ class LanguageBatchBoTest extends TestCase
         $this->deleteLanguageFiles();
         $this->language->generateLanguageFiles();
 
-        foreach ($this->getLanguageFiles() as $languageFile) {
-            $this->assertFileExists($languageFile);
+        foreach ($this->phpFiles as $file) {
+            $this->assertFileExists($file->path);
+            $this->assertEquals($file->content, file_get_contents($file->path));
         }
     }
 
@@ -45,29 +52,39 @@ class LanguageBatchBoTest extends TestCase
         $this->deleteLanguageFiles('xml');
         $this->language->generateAppletLanguageXmlFiles();
 
-        foreach ($this->getLanguageFiles('xml') as $languageFile) {
-            $this->assertFileExists($languageFile);
+        foreach ($this->xmlFiles as $file) {
+            $this->assertFileExists($file->path);
+            $this->assertEquals($file->content, file_get_contents($file->path));
         }
     }
 
     private function deleteLanguageFiles(string $type = 'php'): void
     {
-        foreach ($this->getLanguageFiles($type) as $languageFile) {
-            @unlink($languageFile);
+        switch ($type) {
+            case "php":
+                $files = $this->phpFiles;
+                break;
+            case "xml":
+                $files = $this->xmlFiles;
+                break;
+        }
+
+        foreach ($files as $file) {
+            @unlink($file);
         }
     }
 
-    private function getLanguageFiles(string $type = 'php')
+    private function getLanguageFiles(string $type = 'php'): array
     {
         switch ($type) {
             case "php":
-                $languageFilesGenerator = new LanguageFilesGetter(new PhpLanguageFilesGetter());
+                $languageFilesGetter = new LanguageFilesGetter(new PhpLanguageFilesGetter());
                 break;
             case "xml":
-                $languageFilesGenerator = new LanguageFilesGetter(new XmlLanguageFilesGetter());
+                $languageFilesGetter = new LanguageFilesGetter(new XmlLanguageFilesGetter());
                 break;
         }
 
-        return $languageFilesGenerator->getLanguageFiles();
+        return $languageFilesGetter->getLanguageFiles();
     }
 }
