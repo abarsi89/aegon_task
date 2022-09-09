@@ -1,21 +1,24 @@
 <?php
 
-namespace Language;
+namespace Language\Providers;
 
+use Language\ApiCall;
 use Language\Config;
-use Language\LanguageFilesGetterStrategy;
+use Language\Providers\LanguageFilesProviderStrategy;
 use Language\Models\LanguageFile;
 
 /**
  * Strategy of getting php language files
  */
-class PhpLanguageFilesGetter implements LanguageFilesGetterStrategy
+class PhpLanguageFilesProvider implements LanguageFilesProviderStrategy
 {
     public function getLanguageFiles(): array
     {
         $files = [];
         foreach (Config::get('system.translated_applications') as $application => $languages) {
             foreach ($languages as $language) {
+                //$languageFile = new LanguageFile();
+
                 $files[] = new LanguageFile(
                     $this->getLanguageFilePath($application, $language),
                     $this->getLanguageFileContent($language)

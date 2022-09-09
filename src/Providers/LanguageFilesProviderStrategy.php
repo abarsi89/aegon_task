@@ -1,11 +1,11 @@
 <?php
 
-namespace Language;
+namespace Language\Providers;
 
 /**
  * Interface for language files getting strategy
  */
-interface LanguageFilesGetterStrategy
+interface LanguageFilesProviderStrategy
 {
     public function getLanguageFiles(): array;
 }

@@ -1,9 +1,9 @@
 <?php
 
 use Language\LanguageBatchBo;
-use Language\LanguageFilesGetter;
-use Language\PhpLanguageFilesGetter;
-use Language\XmlLanguageFilesGetter;
+use Language\Providers\LanguageFilesProvider;
+use Language\Providers\PhpLanguageFilesProvider;
+use Language\Providers\XmlLanguageFilesProvider;
 use PHPUnit\Framework\TestCase;
 
 class LanguageBatchBoTest extends TestCase
@@ -78,13 +78,19 @@ class LanguageBatchBoTest extends TestCase
     {
         switch ($type) {
             case "php":
-                $languageFilesGetter = new LanguageFilesGetter(new PhpLanguageFilesGetter());
+                $languageFilesGetter = new LanguageFilesProvider(new PhpLanguageFilesProvider());
                 break;
             case "xml":
-                $languageFilesGetter = new LanguageFilesGetter(new XmlLanguageFilesGetter());
+                $languageFilesGetter = new LanguageFilesProvider(new XmlLanguageFilesProvider());
                 break;
         }
 
         return $languageFilesGetter->getLanguageFiles();
+    }
+
+    public function tearDown(): void
+    {
+        $this->deleteLanguageFiles();
+        $this->deleteLanguageFiles('xml');
     }
 }

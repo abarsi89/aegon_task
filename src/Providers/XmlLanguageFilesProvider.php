@@ -1,16 +1,16 @@
 <?php
 
-namespace Language;
+namespace Language\Providers;
 
 use Language\ApiCall;
 use Language\Config;
-use Language\LanguageFilesGetterStrategy;
+use Language\Providers\LanguageFilesProviderStrategy;
 use Language\Models\LanguageFile;
 
 /**
  * Strategy of getting xml language files
  */
-class XmlLanguageFilesGetter implements LanguageFilesGetterStrategy
+class XmlLanguageFilesProvider implements LanguageFilesProviderStrategy
 {
     public function getLanguageFiles(): array
     {
