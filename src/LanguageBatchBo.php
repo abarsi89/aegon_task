@@ -2,126 +2,39 @@
 
 namespace Language;
 
-use Language\Api\LanguageApi;
+
+use Language\Generators\LanguageFilesGenerator;
+use Language\Generators\PhpLanguageFilesGenerator;
+use Language\Generators\XmlLanguageFilesGenerator;
 
 /**
  * Business logic related to generating language files.
  */
 class LanguageBatchBo
 {
-	/**
-	 * Contains the applications which ones require translations.
-	 *
-	 * @var array
-	 */
-	protected static $applications = array();
+    /**
+     * @param string $languageType
+     */
+    private $languageType;
 
-	/**
-	 * Starts the language file generation.
-	 *
-	 * @return void
-	 */
-	public static function generateLanguageFiles()
+    private function setLanguageType(string $type): void
+    {
+        $this->languageType = $type;
+    }
+
+	public function generateLanguageFiles($type = 'php')
 	{
-		// The applications where we need to translate.
-		self::$applications = Config::get('system.translated_applications');
+        $this->setLanguageType($type);
 
-		echo "\nGenerating language files\n";
-		foreach (self::$applications as $application => $languages) {
-			echo "[APPLICATION: " . $application . "]\n";
-			foreach ($languages as $language) {
-				echo "\t[LANGUAGE: " . $language . "]";
-				if (self::getLanguageFile($application, $language)) {
-					echo " OK\n";
-				}
-				else {
-					throw new \Exception('Unable to generate language file!');
-				}
-			}
-		}
-	}
+        switch ($this->languageType) {
+            case "php":
+                $languageFilesGenerator = new LanguageFilesGenerator(new PhpLanguageFilesGenerator());
+                break;
+            case "xml":
+                $languageFilesGenerator = new LanguageFilesGenerator(new XmlLanguageFilesGenerator());
+                break;
+        }
 
-	/**
-	 * Gets the language file for the given language and stores it.
-	 *
-	 * @param string $application   The name of the application.
-	 * @param string $language      The identifier of the language.
-	 *
-	 * @throws CurlException   If there was an error during the download of the language file.
-	 *
-	 * @return bool   The success of the operation.
-	 */
-	protected static function getLanguageFile($application, $language)
-	{
-		$result = false;
-		
-        $languageResponse = LanguageApi::getLanguageFile($language);
-
-		// If we got correct data we store it.
-		$destination = self::getLanguageCachePath($application) . $language . '.php';
-		// If there is no folder yet, we'll create it.
-		var_dump($destination);
-		if (!is_dir(dirname($destination))) {
-			mkdir(dirname($destination), 0755, true);
-		}
-
-		$result = file_put_contents($destination, $languageResponse);
-
-		return (bool)$result;
-	}
-
-	/**
-	 * Gets the directory of the cached language files.
-	 *
-	 * @param string $application   The application.
-	 *
-	 * @return string   The directory of the cached language files.
-	 */
-	protected static function getLanguageCachePath($application)
-	{
-		return Config::get('system.paths.root') . '/cache/' . $application. '/';
-	}
-
-	/**
-	 * Gets the language files for the applet and puts them into the cache.
-	 *
-	 * @throws Exception   If there was an error.
-	 *
-	 * @return void
-	 */
-	public static function generateAppletLanguageXmlFiles()
-	{
-		// List of the applets [directory => applet_id].
-		$applets = array(
-			'memberapplet' => 'JSM2_MemberApplet',
-		);
-
-		echo "\nGetting applet language XMLs..\n";
-
-		foreach ($applets as $appletDirectory => $appletLanguageId) {
-			echo " Getting > $appletLanguageId ($appletDirectory) language xmls..\n";
-			$languages = LanguageApi::getAppletLanguages($appletLanguageId);
-			if (empty($languages)) {
-				throw new \Exception('There is no available languages for the ' . $appletLanguageId . ' applet.');
-			}
-			else {
-				echo ' - Available languages: ' . implode(', ', $languages) . "\n";
-			}
-			$path = Config::get('system.paths.root') . '/cache/flash';
-			foreach ($languages as $language) {
-				$xmlContent = LanguageApi::getAppletLanguageFile($appletLanguageId, $language);
-				$xmlFile    = $path . '/lang_' . $language . '.xml';
-				if (strlen($xmlContent) == file_put_contents($xmlFile, $xmlContent)) {
-					echo " OK saving $xmlFile was successful.\n";
-				}
-				else {
-					throw new \Exception('Unable to save applet: (' . $appletLanguageId . ') language: (' . $language
-						. ') xml (' . $xmlFile . ')!');
-				}
-			}
-			echo " < $appletLanguageId ($appletDirectory) language xml cached.\n";
-		}
-
-		echo "\nApplet language XMLs generated.\n";
+        return $languageFilesGenerator->generateLanguageFiles();
 	}
 }

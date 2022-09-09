@@ -24,8 +24,7 @@ class LanguageBatchBoTest extends TestCase
     public function testMethodsOfLanguageBatchBoExist()
     {
         $methods = [
-            'generateLanguageFiles',
-            'generateAppletLanguageXmlFiles'
+            'generateLanguageFiles'
         ];
 
         foreach ($methods as $method) {
@@ -42,19 +41,19 @@ class LanguageBatchBoTest extends TestCase
         $this->language->generateLanguageFiles();
 
         foreach ($this->phpFiles as $file) {
-            $this->assertFileExists($file->path);
-            $this->assertEquals($file->content, file_get_contents($file->path));
+            $this->assertFileExists($file->getPath());
+            $this->assertEquals($file->getContent(), file_get_contents($file->getPath()));
         }
     }
 
     public function testGenerateAppletLanguageXmlFiles()
     {
         $this->deleteLanguageFiles('xml');
-        $this->language->generateAppletLanguageXmlFiles();
+        $this->language->generateLanguageFiles('xml');
 
         foreach ($this->xmlFiles as $file) {
-            $this->assertFileExists($file->path);
-            $this->assertEquals($file->content, file_get_contents($file->path));
+            $this->assertFileExists($file->getPath());
+            $this->assertEquals($file->getContent(), file_get_contents($file->getPath()));
         }
     }
 
@@ -70,7 +69,7 @@ class LanguageBatchBoTest extends TestCase
         }
 
         foreach ($files as $file) {
-            @unlink($file);
+            @unlink($file->getPath());
         }
     }
 
